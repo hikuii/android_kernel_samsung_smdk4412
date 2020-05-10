@@ -239,13 +239,11 @@ static unsigned int clkdiv_ip_bus[LV_END][3] = {
 	/* L0: MFC 200MHz G2D 266MHz FIMC 160MHz */
 	{ 3, 2, 4 },
 
-	/* L1: MFC 200MHz G2D 160MHz FIMC 133MHz */
-	/* { 4, 4, 5 }, */
-	{ 3, 4, 5 },
+	/* L1: MFC 160MHz G2D 160MHz FIMC 133MHz */
+	{ 4, 4, 5 },
 
-	/* L2: MFC 200MHz G2D 133MHz FIMC 100MHz */
-	/* { 5, 5, 7 }, */
-	{ 3, 5, 7 },
+	/* L2: MFC 133MHz G2D 133MHz FIMC 100MHz */
+	{ 5, 5, 7 },
 };
 
 #ifdef CONFIG_BUSFREQ_QOS
@@ -379,7 +377,7 @@ static int busfreq_target(struct busfreq_table *freq_table,
 		return -EINVAL;
 
 	if (ppc_load > 50) {
-		pr_debug("Busfreq: Bus Load is larger than 40(%d)\n", ppc_load);
+		pr_debug("Busfreq: Bus Load is larger than 50(%d)\n", ppc_load);
 		ppc_load = 50;
 	}
 

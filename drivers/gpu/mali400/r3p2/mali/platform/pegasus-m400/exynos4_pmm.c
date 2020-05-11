@@ -40,7 +40,7 @@
 #ifdef CONFIG_CPU_EXYNOS4210
 #define MALI_DVFS_STEPS 3
 #define MALI_DVFS_WATING 10 /* msec */
-#define MALI_DVFS_DEFAULT_STEP 0
+#define MALI_DVFS_DEFAULT_STEP 1
 #else
 #define MALI_DVFS_STEPS 5
 #define MALI_DVFS_WATING 10 /* msec */
@@ -90,23 +90,23 @@ typedef struct mali_runtime_resumeTag{
 #if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
 mali_runtime_resume_table mali_runtime_resume = {266, 900000, 1}; /* step 1 */
 #else
-mali_runtime_resume_table mali_runtime_resume = {160, 950000, 1}; /* step 1 */
+mali_runtime_resume_table mali_runtime_resume = {200, 975000, 1}; /* step 1 */
 #endif
 
 /* dvfs table */
 mali_dvfs_table mali_dvfs[MALI_DVFS_STEPS]={
 #if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
-			/* step 0 */{160  ,1000000	,875000	, 0   , 70},
-			/* step 1 */{266  ,1000000	,900000	,62   , 90},
-			/* step 2 */{350  ,1000000	,950000	,85   , 90},
-			/* step 3 */{440  ,1000000	,1025000   ,85   , 90},
-			/* step 4 */{533  ,1000000	,1075000   ,95   ,100} };
+			/* step 0 */{160  ,1000000	, 875000	, 0	, 70},
+			/* step 1 */{266  ,1000000	, 900000	,62	, 90},
+			/* step 2 */{350  ,1000000	, 950000	,85	, 90},
+			/* step 3 */{440  ,1000000	,1025000	,85	, 90},
+			/* step 4 */{533  ,1000000	,1075000	,95	,100},
 #else
-			/* step 0 */{100  ,1000000	, 950000   ,0   , 85},
-			/* step 1 */{160  ,1000000	, 950000   ,80   ,90},
-			/* step 2 */{267  ,1000000	,1000000   ,80   ,100},
- };
+			/* step 0 */{160  ,1000000	, 950000	, 0	, 85},
+			/* step 1 */{200  ,1000000	, 975000	,80	, 90},
+			/* step 2 */{267  ,1000000      ,1000000	,80	,100},
 #endif
+};
 
 #ifdef EXYNOS4_ASV_ENABLED
 #define ASV_LEVEL     12	/* ASV0, 1, 11 is reserved */
@@ -172,21 +172,21 @@ static unsigned int asv_3d_volt_4212_9_table[MALI_DVFS_STEPS][ASV_LEVEL_PD] = {
 #else
 
 static unsigned int asv_3d_volt_4210_12_table[MALI_DVFS_STEPS][ASV_LEVEL_4210_12] = {
-	{  1000000,  1000000,  1000000,   950000,   950000,   950000,   950000,   950000},	/* L2(100Mhz) */
+	{  1000000,   975000,   975000,   950000,   950000,   925000,   925000,   925000},	/* L2(160Mhz) */
 #if (MALI_DVFS_STEPS > 1)
-	{  1000000,  1000000,  1000000,   950000,   950000,   950000,   950000,   950000},	/* L1(160Mhz) */
+	{  1050000,  1025000,  1025000,   975000,   975000,   950000,   950000,   950000},	/* L1(200Mhz) */
 #if (MALI_DVFS_STEPS > 2)
-	{  1100000,  1100000,  1100000,  1000000,  1000000,  1000000,  1000000,   950000},	/* L0(267Mhz) */
+        {  1100000,  1075000,  1075000,  1000000,  1000000,   975000,   975000,   975000},      /* L0(267Mhz) */
 #endif
 #endif
 };
 
 static unsigned int asv_3d_volt_4210_14_table[MALI_DVFS_STEPS][ASV_LEVEL_4210_14] = {
-	{  1000000,  1000000,   950000,   950000,   950000},	/* L2(100Mhz) */
+	{  1000000,   975000,   950000,   925000,   925000},	/* L2(160Mhz) */
 #if (MALI_DVFS_STEPS > 1)
-	{  1000000,  1000000,   950000,   950000,   950000},	/* L1(160Mhz) */
+	{  1050000,  1025000,   975000,   950000,   950000},	/* L1(200Mhz) */
 #if (MALI_DVFS_STEPS > 2)
-	{  1100000,  1100000,  1000000,  1000000,   950000},	/* L0(267Mhz) */
+        {  1100000,  1075000,  1000000,   975000,   975000},    /* L0(267Mhz) */
 #endif
 #endif
 };
@@ -224,7 +224,7 @@ int mali_gpu_vol = 1025000;
 /* Orion */
 static const mali_bool bis_vpll = MALI_FALSE;
 int mali_gpu_clk = 267;
-int mali_gpu_vol = 1050000;
+int mali_gpu_vol = 1000000;
 #endif
 
 static unsigned int GPU_MHZ	= 1000000;
@@ -587,7 +587,7 @@ static mali_bool set_mali_dvfs_status(u32 step,mali_bool boostup)
 #endif
 
 #ifdef EXYNOS4_ASV_ENABLED
-	if (samsung_rev() < EXYNOS4412_REV_2_0) {
+	if (samsung_rev() < EXYNOS4412_REV_2_0 && !soc_is_exynos4210()) {
 		if (mali_dvfs[step].clock == 160)
 			exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_100V);
 		else
@@ -972,7 +972,7 @@ static mali_bool init_mali_clock(void)
 	mali_regulator_set_voltage(mali_gpu_vol, mali_gpu_vol);
 
 #ifdef EXYNOS4_ASV_ENABLED
-	if (samsung_rev() < EXYNOS4412_REV_2_0) {
+	if (samsung_rev() < EXYNOS4412_REV_2_0 && !soc_is_exynos4210()) {
 		if (mali_gpu_clk == 160)
 			exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_100V);
 		else
@@ -1041,7 +1041,7 @@ static _mali_osk_errcode_t enable_mali_clocks(void)
 		mali_regulator_set_voltage(mali_runtime_resume.vol, mali_runtime_resume.vol);
 
 #ifdef EXYNOS4_ASV_ENABLED
-		if (samsung_rev() < EXYNOS4412_REV_2_0) {
+		if (samsung_rev() < EXYNOS4412_REV_2_0 && !soc_is_exynos4210()) {
 			if (mali_runtime_resume.clk == 160)
 				exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_100V);
 			else

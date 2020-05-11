@@ -162,7 +162,7 @@ static struct platform_device mali_gpu_device =
 
 static struct mali_gpu_device_data mali_gpu_data =
 {
-	.shared_mem_size = 256 * 1024 * 1024, /* 256MB */
+	.shared_mem_size = 512 * 1024 * 1024, /* 512MB */
 	.fb_start = 0x40000000,
 	.fb_size = 0xb1000000,
 	.utilization_interval = 100, /* 100ms */

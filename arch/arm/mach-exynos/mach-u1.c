@@ -7504,18 +7504,23 @@ static struct platform_device *smdkc210_devices[] __initdata = {
 /* below temperature base on the celcius degree */
 struct s5p_platform_tmu u1_tmu_data __initdata = {
 	.ts = {
-		.stop_1st_throttle  = 64,
-		.start_1st_throttle = 69,
-		.stop_2nd_throttle  = 87,
-		.start_2nd_throttle = 103,
-		.start_tripping     = 110,
-		.start_emergency    = 120,
-		.stop_mem_throttle  = 85,
-		.start_mem_throttle = 90,
+		.stop_1st_throttle  = 58,
+		.start_1st_throttle = 61,
+		.stop_2nd_throttle  = 61,
+		.start_2nd_throttle = 64,
+		.start_tripping     = 103,
+		.start_emergency    = 110,
+		.stop_mem_throttle  = 70,
+		.start_mem_throttle = 75,
 	},
 	.cpufreq = {
+#ifdef CONFIG_EXYNOS4210_1200MHZ_SUPPORT
+		.limit_1st_throttle  = 1000000, /* 1000MHz in KHz order */
+		.limit_2nd_throttle  =  800000, /*  800MHz in KHz order */
+#else
 		.limit_1st_throttle  = 1200000, /* 1200MHz in KHz order */
 		.limit_2nd_throttle  = 1000000, /* 1000MHz in KHz order */
+#endif
 	},
 };
 #endif

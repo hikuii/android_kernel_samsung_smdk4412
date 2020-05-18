@@ -6545,7 +6545,7 @@ static struct max17042_platform_data s5pv310_max17042_info = {
 	.alert_init_size = sizeof(max17042_alert_init_data),
 	.alert_gpio = GPIO_FUEL_ALERT,
 	.alert_irq = 0,
-	.enable_current_sense = false,
+	.enable_current_sense = true,
 	.enable_gauging_temperature = true,
 #ifdef RECAL_SOC_FOR_MAXIM
 	.need_soc_recal = max17042_need_soc_recal,
@@ -7502,16 +7502,21 @@ struct s5p_platform_tmu u1_tmu_data __initdata = {
 	.ts = {
 		.stop_1st_throttle  = 61,
 		.start_1st_throttle = 64,
-		.stop_2nd_throttle  = 87,
-		.start_2nd_throttle = 103,
-		.start_tripping     = 110,
-		.start_emergency    = 120,
+		.stop_2nd_throttle  = 64,
+		.start_2nd_throttle = 67,
+		.start_tripping     = 87,
+		.start_emergency    = 103,
 		.stop_mem_throttle  = 80,
 		.start_mem_throttle = 85,
 	},
 	.cpufreq = {
-		.limit_1st_throttle  = 800000, /* 800MHz in KHz order */
-		.limit_2nd_throttle  = 200000, /* 200MHz in KHz order */
+#ifdef CONFIG_EXYNOS4210_1200MHZ_SUPPORT
+		.limit_1st_throttle  = 1000000, /* 1000MHz in KHz order */
+		.limit_2nd_throttle  =  800000, /*  800MHz in KHz order */
+#else
+		.limit_1st_throttle  = 1200000, /* 1200MHz in KHz order */
+		.limit_2nd_throttle  = 1000000, /* 1000MHz in KHz order */
+#endif
 	},
 };
 #endif

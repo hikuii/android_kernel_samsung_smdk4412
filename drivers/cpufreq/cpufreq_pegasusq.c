@@ -35,7 +35,7 @@
 #include <linux/notifier.h>
 #include <linux/fb.h>
 #endif
-#define EARLYSUSPEND_HOTPLUGLOCK 1
+#define EARLYSUSPEND_HOTPLUGLOCK 0
 
 /*
  * runqueue average
@@ -155,18 +155,18 @@ static unsigned int get_nr_run_avg(void)
 #define MIN_SAMPLING_RATE			(10000)
 #define MAX_HOTPLUG_RATE			(40u)
 
-#define DEF_MAX_CPU_LOCK			(0)
+#define DEF_MAX_CPU_LOCK			(2)
 #define DEF_MIN_CPU_LOCK			(0)
-#define DEF_CPU_UP_FREQ				(500000)
-#define DEF_CPU_DOWN_FREQ			(200000)
+#define DEF_CPU_UP_FREQ				(900000)
+#define DEF_CPU_DOWN_FREQ			(700000)
 #define DEF_UP_NR_CPUS				(1)
 #define DEF_CPU_UP_RATE				(10)
 #define DEF_CPU_DOWN_RATE			(20)
-#define DEF_FREQ_STEP				(37)
+#define DEF_FREQ_STEP				(14)
 #define DEF_START_DELAY				(0)
 
 #define DEF_UP_THRESHOLD_AT_MIN_FREQ		(40)
-#define DEF_FREQ_FOR_RESPONSIVENESS		(500000)
+#define DEF_FREQ_FOR_RESPONSIVENESS		(1000000)
 
 #define HOTPLUG_DOWN_INDEX			(0)
 #define HOTPLUG_UP_INDEX			(1)
@@ -182,7 +182,7 @@ static int hotplug_freq[4][2] = {
 	{200000, 500000},
 	{200000, 0}
 };
-#elif CONFIG_MACH_SMDK4210
+#elif CONFIG_MACH_SMDK4210 || CONFIG_MACH_U1_BD
 static int hotplug_rq[2][2] = {
 	{0, 100}, {100, 0}
 };
@@ -190,6 +190,15 @@ static int hotplug_rq[2][2] = {
 static int hotplug_freq[2][2] = {
 	{0, 500000},
 	{200000, 0}
+};
+#elif CONFIG_MACH_Q1_BD
+static int hotplug_rq[2][2] = {
+	{0, 100}, {100, 0}
+};
+
+static int hotplug_freq[2][2] = {
+	{0, 900000},
+	{700000, 0}
 };
 #else
 static int hotplug_rq[4][2] = {

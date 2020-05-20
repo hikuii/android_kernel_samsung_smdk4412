@@ -483,32 +483,6 @@ static int mfc_release(struct inode *inode, struct file *file)
 	}
 #endif
 
-#if defined(CONFIG_MACH_GC1) && defined(CONFIG_EXYNOS4_CPUFREQ)
-	/* Release MFC & CPU Frequency lock for High resolution */
-	if (mfc_ctx->cpufreq_flag == true) {
-		atomic_dec(&dev->cpufreq_lock_cnt);
-		mfc_ctx->cpufreq_flag = false;
-		if (atomic_read(&dev->cpufreq_lock_cnt) == 0) {
-			/* release Freq lock back to normal */
-			exynos_cpufreq_lock_free(DVFS_LOCK_ID_MFC);
-			mfc_dbg("[%s] CPU Freq lock Released Normal!\n", __func__);
-		}
-	}
-#endif
-
-#if defined(CONFIG_CPU_EXYNOS4210) && defined(CONFIG_EXYNOS4_CPUFREQ)
-	/* Release MFC & CPU Frequency lock for High resolution */
-	if (mfc_ctx->cpufreq_flag == true) {
-		atomic_dec(&dev->cpufreq_lock_cnt);
-		mfc_ctx->cpufreq_flag = false;
-		if (atomic_read(&dev->cpufreq_lock_cnt) == 0) {
-			/* release Freq lock back to normal */
-			exynos_cpufreq_lock_free(DVFS_LOCK_ID_MFC);
-			mfc_dbg("[%s] CPU Freq lock Released Normal!\n", __func__);
-		}
-	}
-#endif
-
 #ifdef CONFIG_BUSFREQ_OPP
 	if (mfc_ctx->dmcthreshold_flag == true) {
 		atomic_dec(&dev->dmcthreshold_lock_cnt);

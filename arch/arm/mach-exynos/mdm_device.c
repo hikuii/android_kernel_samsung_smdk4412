@@ -136,42 +136,6 @@ static int exynos_frequency_lock(struct device *dev)
 	int ret = 0;
 	struct device *busdev = dev_get("exynos-busfreq");
 
-	if (atomic_read(&mdm_hsic_pm_pdata.freqlock) == 0) {
-		/* cpu frequency lock */
-		ret = exynos_cpufreq_get_level(cpufreq * 1000, &level);
-		if (ret < 0) {
-			pr_err("ERR: exynos_cpufreq_get_level fail: %d\n",
-					ret);
-			goto exit;
-		}
-
-		ret = exynos_cpufreq_lock(DVFS_LOCK_ID_USB_IF, level);
-		if (ret < 0) {
-			pr_err("ERR: exynos_cpufreq_lock fail: %d\n", ret);
-			goto exit;
-		}
-
-		/* bus frequncy lock */
-		if (!busdev) {
-			pr_err("ERR: busdev is not exist\n");
-			ret = -ENODEV;
-			goto exit;
-		}
-
-		ret = dev_lock(busdev, dev, busfreq);
-		if (ret < 0) {
-			pr_err("ERR: dev_lock error: %d\n", ret);
-			goto exit;
-		}
-
-		/* lock minimum number of cpu cores */
-		cpufreq_pegasusq_min_cpu_lock(2);
-
-		atomic_set(&mdm_hsic_pm_pdata.freqlock, 1);
-		pr_debug("level=%d, cpufreq=%d MHz, busfreq=%06d\n",
-				level, cpufreq, busfreq);
-	}
-exit:
 	return ret;
 }
 
@@ -180,24 +144,6 @@ static int exynos_frequency_unlock(struct device *dev)
 	int ret = 0;
 	struct device *busdev = dev_get("exynos-busfreq");
 
-	if (atomic_read(&mdm_hsic_pm_pdata.freqlock) == 1) {
-		/* cpu frequency unlock */
-		exynos_cpufreq_lock_free(DVFS_LOCK_ID_USB_IF);
-
-		/* bus frequency unlock */
-		ret = dev_unlock(busdev, dev);
-		if (ret < 0) {
-			pr_err("ERR: dev_unlock error: %d\n", ret);
-			goto exit;
-		}
-
-		/* unlock minimum number of cpu cores */
-		cpufreq_pegasusq_min_cpu_unlock();
-
-		atomic_set(&mdm_hsic_pm_pdata.freqlock, 0);
-		pr_debug("success\n");
-	}
-exit:
 	return ret;
 }
 

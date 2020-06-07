@@ -537,11 +537,11 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
 
 	info->mpll_freq_khz = rate;
 #if defined(CONFIG_EXYNOS4210_1200MHZ_SUPPORT)
-	info->pm_lock_idx = L6; /* PM safe freq should be 800Mhz on cpu wakeup */
-	info->pll_safe_idx = L4; /* Safe freq should be 1000Mhz */
-#else
-	info->pm_lock_idx = L3;
+	info->pm_lock_idx = L2;
 	info->pll_safe_idx = L2;
+#else
+	info->pm_lock_idx = L0;
+	info->pll_safe_idx = L0;
 #endif
 	info->max_support_idx = max_support_idx;
 	info->min_support_idx = min_support_idx;

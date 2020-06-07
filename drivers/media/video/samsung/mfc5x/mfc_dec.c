@@ -1864,10 +1864,10 @@ int mfc_init_decoding(struct mfc_inst_ctx *ctx, union mfc_args *args)
 	if ((ctx->width >= 1280 && ctx->height >= 720)
 		|| (ctx->width >= 720 && ctx->height >= 1280)) {
 		if (atomic_read(&ctx->dev->cpufreq_lock_cnt) == 0) {
-			if (0 == ctx->dev->cpufreq_level) /* 500MHz */
-				exynos_cpufreq_get_level(500000, &ctx->dev->cpufreq_level);
+			if (0 == ctx->dev->cpufreq_level) /* 800MHz */
+				exynos_cpufreq_get_level(800000, &ctx->dev->cpufreq_level);
 			exynos_cpufreq_lock(DVFS_LOCK_ID_MFC, ctx->dev->cpufreq_level);
-			mfc_dbg("[%s] CPU Freq Locked 500MHz!\n", __func__);
+			mfc_dbg("[%s] CPU Freq Locked 800MHz!\n", __func__);
 		}
 		atomic_inc(&ctx->dev->cpufreq_lock_cnt);
 		ctx->cpufreq_flag = true;

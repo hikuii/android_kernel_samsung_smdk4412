@@ -123,6 +123,12 @@ config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
 	bool "pegasusq"
 	select CPU_FREQ_GOV_PEGASUSQ
 
+config CPU_FREQ_DEFAULT_GOV_LIONHEART
+	bool "lionheart"
+	select CPU_FREQ_GOV_LIONHEART
+	help
+	  Use the CPUFreq governor 'lionheart' as default.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -287,6 +293,14 @@ config SLP_CHECK_CPU_LOAD
 config SLP_GOV_DYNAMIC_PARAMS
         bool "check SLP GOV. Dynamic Params feature"
 	depends on CPU_FREQ_GOV_SLP
+
+config CPU_FREQ_GOV_LIONHEART
+	tristate "lionheart"
+	depends on CPU_FREQ
+	help
+	  Use the CPUFreq governor 'lionheart' as default.
+
+	  If in doubt, say N.
 
 config CPU_FREQ_DVFS_MONITOR
 	bool "dvfs monitor"

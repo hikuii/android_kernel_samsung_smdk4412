@@ -24,6 +24,10 @@
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
 
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+#include <linux/mfc_decode_status.h>
+#endif
+
 #if defined(CONFIG_MALI400_PROFILING)
 #include "mali_osk_profiling.h"
 #endif
@@ -833,6 +837,16 @@ static unsigned int decideNextStatus(unsigned int utilization)
 			}
 		}
 	}
+
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+	if(mfc_isdecode(NULL)){
+		if(mfc_isdecode(NULL) == 3 && !level){
+			// FHD Decoding detected
+			// decided step is 0 (133MHz), push it up to 1 (160MHz)
+			level = 1;
+		}
+	}
+#endif
 
 	return level;
 }

@@ -36,6 +36,10 @@
 #include "mfc_mem.h"
 #include "mfc_buf.h"
 
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+#include <linux/mfc_decode_status.h>
+#endif
+
 #undef DUMP_STREAM
 
 #ifdef DUMP_STREAM
@@ -75,6 +79,19 @@ static int check_vcl(unsigned long addr, unsigned int size)
 {
 	return -1;
 }
+#endif
+
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+static unsigned int mfc_isdecode_var = 0;
+
+unsigned int mfc_isdecode(int var01){
+	if(var01 != -1){
+		return mfc_isdecode_var;
+	}
+	mfc_isdecode_var = 0;
+	return;
+}
+EXPORT_SYMBOL(mfc_isdecode);
 #endif
 
 #ifdef DUMP_STREAM
@@ -1869,6 +1886,20 @@ if (HD_MOVIE_SIZE_MULTIPLY_WIDTH_HEIGHT > (ctx->width * ctx->height)) {
 	ctx->dmcthreshold_flag = true;
 }
 #endif
+
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+	if(ctx->width * ctx->height >= 1920*1080){
+		// FHD Decoding
+		mfc_isdecode_var = 3;
+	}else if(ctx->width * ctx->height >= 1280*720){
+		// HD Decoding
+		mfc_isdecode_var = 2;
+	}else{
+		// SD Decoding
+		mfc_isdecode_var = 1;
+	}
+#endif
+
 	/*
 	 * allocate & set codec buffers
 	 */

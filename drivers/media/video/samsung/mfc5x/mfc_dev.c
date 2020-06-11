@@ -62,6 +62,10 @@
 #include "mfc_mem.h"
 #include "mfc_cmd.h"
 
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+#include <linux/mfc_decode_status.h>
+#endif
+
 #ifdef SYSMMU_MFC_ON
 #include <plat/sysmmu.h>
 #endif
@@ -467,6 +471,12 @@ static int mfc_release(struct inode *inode, struct file *file)
 		mutex_lock(&dev->lock);
 		dev->slice_sys = 0;
 		dev->wait_slice_timeout = 0;
+	}
+#endif
+
+#ifdef CONFIG_VIDEO_MFC5X_DECODE_STATUS
+	if(mfc_isdecode(-1)){
+		// don't fail!
 	}
 #endif
 

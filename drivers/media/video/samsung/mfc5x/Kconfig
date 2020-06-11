@@ -30,6 +30,15 @@ config VIDEO_MFC5X_DEBUG
 	depends on VIDEO_MFC5X
 	default n
 
+config VIDEO_MFC5X_DECODE_STATUS
+    bool "Allow external drivers to access MFC's decoding status"
+    depends on VIDEO_MFC5X
+    default n
+	---help---
+	  This allows the use of mfc_isdecode() function
+	  externally to access MFC's decoder state, whether
+	  the driver is performing decoding operation.
+
 config VIDEO_MFC5X_DEC_CHROMA_LUMA_4K_ALIGN
 	bool "4k align for chroma and luma size in dec"
 	depends on VIDEO_MFC5X && SLP

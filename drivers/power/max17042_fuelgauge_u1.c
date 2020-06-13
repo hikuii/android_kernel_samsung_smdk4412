@@ -150,8 +150,6 @@ static void max17042_init_regs(struct i2c_client *client)
 	u8 data[2];
 	/* struct max17042_platform_data *pdata = client->dev.platform_data; */
 
-	dev_info(&client->dev, "%s\n", __func__);
-
 	if (chip->is_enable) {
 		/* max17042_write_reg_array(client, pdata->init,
 			pdata->init_size); */
@@ -169,8 +167,6 @@ static void max17042_init_regs(struct i2c_client *client)
 static void max17042_alert_init(struct i2c_client *client)
 {
 	struct max17042_platform_data *pdata = client->dev.platform_data;
-
-	dev_info(&client->dev, "%s\n", __func__);
 
 	max17042_write_reg_array(client, pdata->alert_init,
 		pdata->alert_init_size);
@@ -231,11 +227,6 @@ static void max17042_reset_soc(struct i2c_client *client)
 	u8 data[2];
 
 	if (chip->is_enable) {
-		dev_info(&client->dev, "%s : Before quick-start - "
-			"VfOCV(%d), VfSOC(%d)\n",
-			__func__, max17042_read_vfocv(client),
-			max17042_read_vfsoc(client));
-
 		if (max17042_read_reg(client, MAX17042_REG_MISCCFG, data) < 0)
 			return;
 
@@ -244,11 +235,6 @@ static void max17042_reset_soc(struct i2c_client *client)
 		max17042_write_reg(client, MAX17042_REG_MISCCFG, data);
 
 		msleep(500);
-
-		dev_info(&client->dev, "%s : After quick-start - "
-			"VfOCV(%d), VfSOC(%d)\n",
-			__func__, max17042_read_vfocv(client),
-			max17042_read_vfsoc(client));
 	}
 
 	return;
@@ -301,15 +287,11 @@ static int max17042_recalc_soc(struct i2c_client *client, int boot_cnt)
 				temp_vfocv = temp_vfocv + 0x0380; /* +70mV */
 			else
 				temp_vfocv = temp_vfocv - 0x0380; /* -70mV */
-
-			dev_info(&client->dev, "cable = %d, ", value.intval);
 		} else
 			temp_vfocv = temp_vfocv + 0x0380; /* +70mV */
 
 		data[1] = temp_vfocv >> 8;
 		data[0] = 0x00FF & temp_vfocv;
-		dev_info(&client->dev, "forced write to vfocv %d mV\n",
-			 (temp_vfocv >> 4) * 125 / 100);
 		max17042_write_reg(client, MAX17042_REG_VFOCV, data);
 
 		msleep(200);
@@ -318,9 +300,6 @@ static int max17042_recalc_soc(struct i2c_client *client, int boot_cnt)
 		soc = min((int)data[1], 100);
 
 		max17042_read_reg(client, MAX17042_REG_VCELL, data);
-		dev_info(&client->dev, "new vcell = %d, vfocv = %d, soc = %d\n",
-			 ((data[0] >> 3) + (data[1] << 5)) * 625 / 1000,
-			 max17042_read_vfocv(client), soc);
 	} else
 		soc = 70;
 
@@ -337,19 +316,12 @@ static void max17042_get_soc(struct i2c_client *client)
 	if (chip->is_enable) {
 		if (max17042_read_reg(client, MAX17042_REG_SOC_VF, data) < 0)
 			return;
-#ifndef PRODUCT_SHIP
-		dev_info(&chip->client->dev, "%s : soc(%02x%02x)\n",
-				__func__, data[1], data[0]);
-#endif
 		soc = (data[1] * 100) + (data[0] * 100 / 256);
 
 		chip->raw_soc = min(soc / 100, 100);
 
 #ifdef RECAL_SOC_FOR_MAXIM
 		if (chip->pdata->need_soc_recal()) {
-			dev_info(&client->dev,
-				"%s : recalculate soc\n", __func__);
-
 			/*modified 3.6V cut-off */
 			/*raw 3% ~ 95% */
 			soc = (soc < 300) ? 0 : ((soc - 300) * 100 / 9200) + 1;
@@ -357,14 +329,7 @@ static void max17042_get_soc(struct i2c_client *client)
 			if (chip->boot_cnt < 4)
 				chip->boot_cnt++;
 
-			dev_info(&client->dev,
-				"vcell = %d, vfocv = %d, soc = %d\n",
-				chip->vcell,  max17042_read_vfocv(client), soc);
-
 			if (soc < 5) {
-				dev_info(&client->dev,
-					"recalc force soc = %d, diff = %d!\n",
-					soc, diff);
 				chip->recalc_180s = 1;
 			}
 
@@ -378,9 +343,6 @@ static void max17042_get_soc(struct i2c_client *client)
 				diff = 0;
 
 			if (diff > 10) {
-				dev_info(&client->dev,
-					"recalc 180s soc = %d, diff = %d!\n",
-					soc, diff);
 				chip->recalc_180s = 1;
 			}
 
@@ -412,11 +374,6 @@ static void max17042_get_soc(struct i2c_client *client)
 	soc = min(soc, 100);
 
 	chip->soc = soc;
-
-#ifndef PRODUCT_SHIP
-	dev_info(&client->dev, "%s : use raw (%d), soc (%d)\n",
-		__func__, chip->raw_soc, soc);
-#endif
 }
 
 static void max17042_get_temperature(struct i2c_client *client)
@@ -457,9 +414,6 @@ static void max17042_get_version(struct i2c_client *client)
 	if (chip->is_enable) {
 		if (max17042_read_reg(client, MAX17042_REG_VERSION, data) < 0)
 			return;
-
-		dev_info(&client->dev, "MAX17042 Fuel-Gauge Ver %d%d\n",
-				data[0], data[1]);
 	}
 }
 
@@ -509,22 +463,13 @@ static void max17042_work(struct work_struct *work)
 			__pm_stay_awake(&chip->fuel_alert_wake_lock);
 			chip->pdata->low_batt_cb();
 			chip->is_fuel_alerted = true;
-
-			dev_info(&chip->client->dev,
-				"fuel alert activated by polling check (raw:%d)\n",
-				chip->raw_soc);
-		} else
-			dev_info(&chip->client->dev,
-				"fuel alert already activated (raw:%d)\n",
-				chip->raw_soc);
+		} else {
+			//
+		}
 	} else if (chip->raw_soc >= chip->fuel_alert_soc) {
 		if (chip->is_fuel_alerted) {
 			__pm_relax(&chip->fuel_alert_wake_lock);
 			chip->is_fuel_alerted = false;
-
-			dev_info(&chip->client->dev,
-				"fuel alert deactivated by polling check (raw:%d)\n",
-				chip->raw_soc);
 		}
 	}
 
@@ -680,9 +625,6 @@ static bool max17042_check_status(struct i2c_client *client)
 		if (max17042_read_reg(client, MAX17042_REG_STATUS, data) < 0)
 			return ret;
 
-		dev_info(&client->dev, "%s : status_reg(%02x%02x)\n",
-				__func__, data[1], data[0]);
-
 		/* minimum SOC threshold exceeded. */
 		if (data[1] & (0x1 << 2))
 			ret = true;
@@ -726,10 +668,6 @@ static irqreturn_t max17042_irq_thread(int irq, void *irq_data)
 				"failed to call low_batt_cb()\n");
 
 		max17042_write_reg(chip->client, MAX17042_REG_CONFIG, data);
-
-		dev_info(&chip->client->dev,
-			"%s : low batt alerted!! config_reg(%02x%02x)\n",
-			__func__, data[1], data[0]);
 	} else if (!max17042_alert_status /* && (chip->is_fuel_alerted)*/) {
 		if (chip->is_fuel_alerted)
 			__pm_relax(&chip->fuel_alert_wake_lock);
@@ -742,31 +680,17 @@ static irqreturn_t max17042_irq_thread(int irq, void *irq_data)
 		data[1] &= (~(0x1 << 3));
 
 		max17042_write_reg(chip->client, MAX17042_REG_CONFIG, data);
-
-		dev_info(&chip->client->dev,
-			"%s : low batt released!! config_reg(%02x%02x)\n",
-			__func__, data[1], data[0]);
 	}
 
 	max17042_read_reg(chip->client, MAX17042_REG_VCELL, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_VCELL(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	max17042_read_reg(chip->client, MAX17042_REG_TEMPERATURE, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_TEMPERATURE(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	max17042_read_reg(chip->client, MAX17042_REG_CONFIG, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_CONFIG(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	max17042_read_reg(chip->client, MAX17042_REG_VFOCV, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_VFOCV(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	max17042_read_reg(chip->client, MAX17042_REG_SOC_VF, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_SOC_VF(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	dev_err(&chip->client->dev,
 		"%s : PMIC IRQ (%d), FUEL GAUGE IRQ (%d)\n",
@@ -775,44 +699,24 @@ static irqreturn_t max17042_irq_thread(int irq, void *irq_data)
 
 #if 0
 	**max17042_read_reg(chip->client, MAX17042_REG_STATUS, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_STATUS(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_VALRT_TH, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_VALRT_TH(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_TALRT_TH, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_TALRT_TH(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_SALRT_TH, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_SALRT_TH(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_AVGVCELL, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_AVGVCELL(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_VERSION, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_VERSION(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_LEARNCFG, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_LEARNCFG(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_MISCCFG, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_MISCCFG(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_CGAIN, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_CGAIN(%02x%02x)\n",
-		__func__, data[1], data[0]);
 
 	**max17042_read_reg(chip->client, MAX17042_REG_RCOMP, data);
-	dev_info(&chip->client->dev, "%s : MAX17042_REG_RCOMP(%02x%02x)\n",
-		__func__, data[1], data[0]);
 #endif
 
 	return IRQ_HANDLED;
@@ -853,9 +757,6 @@ static int max17042_irq_init(struct max17042_chip *chip)
 
 	max17042_write_reg(chip->client, MAX17042_REG_CONFIG, data);
 
-	dev_info(&chip->client->dev, "%s : config_reg(%02x%02x) irq(%d)\n",
-		__func__, data[1], data[0], chip->pdata->alert_irq);
-
 	return 0;
 }
 
@@ -868,8 +769,6 @@ static int __devinit max17042_probe(struct i2c_client *client,
 	struct max17042_reg_data *data;
 	int ret;
 	u8 i2c_data[2];
-
-	dev_info(&client->dev, "%s: MAX17042 Driver Loading\n", __func__);
 
 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
 		return -EIO;
@@ -908,9 +807,6 @@ static int __devinit max17042_probe(struct i2c_client *client,
 	else
 		chip->is_enable = true;
 
-	dev_info(&client->dev, "%s : is enable (%d)\n",
-		__func__, chip->is_enable);
-
 	/* initialize fuel gauge registers */
 	max17042_init_regs(client);
 
@@ -927,9 +823,6 @@ static int __devinit max17042_probe(struct i2c_client *client,
 				chip->fuel_alert_soc =
 				(data + i)->reg_data1;
 
-		dev_info(&client->dev, "fuel alert soc (%d)\n",
-			chip->fuel_alert_soc);
-
 		ret = max17042_irq_init(chip);
 		if (ret)
 			goto err_kfree;
@@ -942,8 +835,6 @@ static int __devinit max17042_probe(struct i2c_client *client,
 
 	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17042_work);
 	schedule_delayed_work(&chip->work, MAX17042_SHORT_DELAY);
-
-	dev_info(&client->dev, "%s: MAX17042 Driver Loaded\n", __func__);
 
 	return 0;
 

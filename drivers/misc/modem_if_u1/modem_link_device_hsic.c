@@ -125,8 +125,6 @@ static int usb_init_communication(struct link_device *ld,
 	struct task_struct *task = get_current();
 	char str[TASK_COMM_LEN];
 
-	mif_info("%d:%s\n", task->pid, get_task_comm(str, task));
-
 	/* Send IPC Start ASCII 'a' */
 	if (iod->id == 0x1)
 		return start_ipc(ld, iod);
@@ -194,7 +192,6 @@ static void usb_rx_retry_work(struct work_struct *work)
 	switch (pipe_data->format) {
 	case IF_USB_FMT_EP:
 		if (usb_ld->if_usb_is_main) {
-			pr_urb("IPC-RX, retry", urb);
 			iod_format = IPC_FMT;
 		} else {
 			iod_format = IPC_BOOT;
@@ -205,7 +202,6 @@ static void usb_rx_retry_work(struct work_struct *work)
 		break;
 	case IF_USB_RFS_EP:
 		iod_format = IPC_RFS;
-		pr_urb("RFS-RX, retry", urb);
 		break;
 	case IF_USB_CMD_EP:
 		iod_format = IPC_CMD;
@@ -269,7 +265,6 @@ static void usb_rx_complete(struct urb *urb)
 		switch (pipe_data->format) {
 		case IF_USB_FMT_EP:
 			if (usb_ld->if_usb_is_main) {
-				pr_urb("IPC-RX", urb);
 				iod_format = IPC_FMT;
 			} else {
 				iod_format = IPC_BOOT;
@@ -479,7 +474,7 @@ static int _usb_tx_work(struct sk_buff *skb)
 		return -ENOENT;
 
 	if (iod->format == IPC_FMT && usb_ld->if_usb_is_main)
-		pr_skb("IPC-TX", skb);
+		//
 
 	if (iod->format == IPC_RAW)
 		mif_debug("TX[RAW]\n");
@@ -645,19 +640,14 @@ static void link_pm_runtime_start(struct work_struct *work)
 
 	/* wait interface driver resumming */
 	if (dev->power.runtime_status == RPM_SUSPENDED) {
-		mif_info("suspended yet, delayed work\n");
 		queue_delayed_work(pm_data->wq, &pm_data->link_pm_start,
 			msecs_to_jiffies(20));
 		return;
 	}
 
 	if (pm_data->usb_ld->usbdev && dev->parent) {
-		mif_info("rpm_status: %d\n",
-			dev->power.runtime_status);
 		pm_runtime_set_autosuspend_delay(dev, 200);
 		hdev = usbdev->bus->root_hub->dev.parent;
-		mif_info("EHCI runtime %s, %s\n", dev_driver_string(hdev),
-			dev_name(hdev));
 		pm_runtime_allow(dev);
 		pm_runtime_allow(hdev);/*ehci*/
 		pm_data->link_pm_active = true;
@@ -741,11 +731,9 @@ static inline int link_pm_slave_wake(struct link_pm_data *pm_data)
 				!= HOSTWAKE_TRIGLEVEL) {
 		if (gpio_get_value(pm_data->gpio_link_slavewake)) {
 			gpio_set_value(pm_data->gpio_link_slavewake, 0);
-			mif_info("gpio [SWK] set [0]\n");
 			mdelay(5);
 		}
 		gpio_set_value(pm_data->gpio_link_slavewake, 1);
-		mif_info("gpio [SWK] set [1]\n");
 		mdelay(5);
 
 		/* wait host wake signal*/
@@ -814,7 +802,6 @@ static void link_pm_runtime_work(struct work_struct *work)
 		break;
 	case RPM_SUSPENDING:
 		/* Checking the usb_runtime_suspend running time.*/
-		mif_info("rpm_states=%d", dev->power.runtime_status);
 		msleep(20);
 		break;
 	default:
@@ -860,13 +847,11 @@ static irqreturn_t link_pm_irq_handler(int irq, void *data)
 		runtime pm status changes to ACTIVE
 	*/
 	value = gpio_get_value(pm_data->gpio_link_hostwake);
-	mif_info("gpio [HWK] get [%d]\n", value);
 
 	/*
 	* igonore host wakeup interrupt at suspending kernel
 	*/
 	if (pm_data->dpm_suspending) {
-		mif_info("ignore request by suspending\n");
 		/* Ignore HWK but AP got to L2 by suspending fail */
 		__pm_stay_awake(&pm_data->l2_wake);
 		return IRQ_HANDLED;
@@ -904,8 +889,6 @@ static long link_pm_ioctl(struct file *file, unsigned int cmd,
 	int value;
 	struct link_pm_data *pm_data = file->private_data;
 	struct modem_ctl *mc = if_usb_get_modemctl(pm_data);
-
-	mif_info("%x\n", cmd);
 
 	switch (cmd) {
 	case IOCTL_LINK_CONTROL_ENABLE:
@@ -989,7 +972,6 @@ static int link_pm_notifier_event(struct notifier_block *this,
 #ifdef CONFIG_UMTS_MODEM_XMM6262
 		/* set PDA Active High if previous state was LPA */
 		if (!gpio_get_value(pm_data->gpio_link_active)) {
-			mif_info("PDA active High to LPA suspend spot\n");
 			gpio_set_value(mc->gpio_pda_active, 1);
 		}
 #endif
@@ -1005,13 +987,11 @@ static int link_pm_notifier_event(struct notifier_block *this,
 			== HOSTWAKE_TRIGLEVEL) {
 			queue_delayed_work(pm_data->wq, &pm_data->link_pm_work,
 				0);
-			mif_info("post resume\n");
 		}
 #ifdef CONFIG_UMTS_MODEM_XMM6262
 		/* LPA to Kernel suspend and User Freezing task fail resume,
 		restore to LPA GPIO states. */
 		if (!gpio_get_value(pm_data->gpio_link_active)) {
-			mif_info("PDA active low to LPA GPIO state\n");
 			gpio_set_value(mc->gpio_pda_active, 0);
 		}
 #endif
@@ -1123,8 +1103,6 @@ static void if_usb_disconnect(struct usb_interface *intf)
 	struct device *dev, *hdev;
 	struct link_device *ld = &devdata->usb_ld->ld;
 
-	mif_info("\n");
-
 	if (devdata->disconnected)
 		return;
 
@@ -1137,7 +1115,6 @@ static void if_usb_disconnect(struct usb_interface *intf)
 	hdev = devdata->usbdev->bus->root_hub->dev.parent;
 	pm_runtime_forbid(hdev); /*ehci*/
 
-	mif_info("put dev 0x%p\n", devdata->usbdev);
 	usb_put_dev(devdata->usbdev);
 
 	devdata->data_intf = NULL;
@@ -1184,8 +1161,6 @@ static int if_usb_set_pipe(struct usb_link_device *usb_ld,
 		return -EINVAL;
 	}
 
-	mif_info("set %d\n", pipe);
-
 	if ((usb_pipein(desc->endpoint[0].desc.bEndpointAddress)) &&
 	    (usb_pipeout(desc->endpoint[1].desc.bEndpointAddress))) {
 		usb_ld->devdata[pipe].rx_pipe = usb_rcvbulkpipe(usb_ld->usbdev,
@@ -1220,8 +1195,6 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 	struct usb_driver *usbdrv = to_usb_driver(intf->dev.driver);
 	struct usb_id_info *info = (struct usb_id_info *)id->driver_info;
 	struct usb_link_device *usb_ld = info->usb_ld;
-
-	mif_info("usbdev = 0x%p\n", usbdev);
 
 	pr_debug("%s: Class=%d, SubClass=%d, Protocol=%d\n", __func__,
 		intf->altsetting->desc.bInterfaceClass,
@@ -1316,8 +1289,6 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 		return -EINVAL;
 
 	usb_ld->devdata[pipe].usbdev = usb_get_dev(usbdev);
-	mif_info("devdata usbdev = 0x%p\n",
-		usb_ld->devdata[pipe].usbdev);
 	usb_ld->devdata[pipe].usb_ld = usb_ld;
 	usb_ld->devdata[pipe].data_intf = data_intf;
 	usb_ld->devdata[pipe].format = pipe;
@@ -1355,8 +1326,6 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 
 	if (pipe == IF_USB_CMD_EP || info->intf_id == BOOT_DOWN)
 		usb_ld->if_usb_connected = 1;
-
-	mif_info("successfully done\n");
 
 	return 0;
 }
@@ -1446,8 +1415,6 @@ static int if_usb_init(struct link_device *ld)
 		}
 	}
 
-	mif_info("if_usb_init() done : %d, usb_ld (0x%p)\n",
-								ret, usb_ld);
 	return ret;
 }
 
@@ -1591,7 +1558,6 @@ struct link_device *hsic_create_link_device(void *data)
 	if (ret)
 		goto err;
 
-	mif_info("%s : create_link_device DONE\n", usb_ld->ld.name);
 	return (void *)ld;
 err:
 	kfree(usb_ld);

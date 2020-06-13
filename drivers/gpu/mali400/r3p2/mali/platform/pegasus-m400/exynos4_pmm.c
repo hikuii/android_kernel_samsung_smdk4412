@@ -626,7 +626,7 @@ static void mali_platform_wating(u32 msec)
 		read_val = _mali_osk_mem_ioread32(clk_register_map, 0x00);
 		if ((read_val & 0x8000)==0x0000) break;
 
-		_mali_osk_time_ubusydelay(100); /* 1000 -> 100 : 20101218 */
+		_mali_osk_time_ubusydelay(msec); /* msec */
 	}
 }
 

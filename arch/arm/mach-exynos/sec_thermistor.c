@@ -185,11 +185,9 @@ static void notify_change_of_temperature(struct sec_therm_info *info)
 		snprintf(siop_buf, sizeof(siop_buf), "SIOP_LEVEL=%d",
 			 siop_level);
 		envp[env_offset++] = siop_buf;
-		dev_info(info->dev, "%s: uevent: %s\n", __func__, siop_buf);
 	}
 	envp[env_offset] = NULL;
 
-	dev_info(info->dev, "%s: uevent: %s\n", __func__, temp_buf);
 	kobject_uevent_env(&info->dev->kobj, KOBJ_CHANGE, envp);
 }
 
@@ -225,8 +223,6 @@ static __devinit int sec_therm_probe(struct platform_device *pdev)
 	struct sec_therm_platform_data *pdata = dev_get_platdata(&pdev->dev);
 	struct sec_therm_info *info;
 	int ret = 0;
-
-	dev_info(&pdev->dev, "%s: SEC Thermistor Driver Loading\n", __func__);
 
 	info = kzalloc(sizeof(*info), GFP_KERNEL);
 	if (!info)

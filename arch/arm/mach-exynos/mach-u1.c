@@ -461,8 +461,6 @@ static int m5mo_power_on(void)
 
 static void sii9234_cfg_gpio(void)
 {
-	printk(KERN_INFO "%s()\n", __func__);
-
 	s3c_gpio_cfgpin(GPIO_AP_SDA_18V, S3C_GPIO_SFN(0x0));
 	s3c_gpio_setpull(GPIO_AP_SDA_18V, S3C_GPIO_PULL_NONE);
 
@@ -1148,7 +1146,6 @@ static int s5k5bafx_power(int onoff)
 #if defined(CONFIG_MACH_U1_KOR_LGT)
 	u32 cfg = 0;
 #endif
-	printk(KERN_INFO "%s(): %s\n", __func__, onoff ? "on" : "down");
 
 #if defined(CONFIG_MACH_U1_KOR_LGT)
 	cfg = readl(S5P_VA_GPIO2 + 0x002c);
@@ -1439,7 +1436,6 @@ static int s5k5bbgx_power(int onoff)
 {
 	int ret = 0;
 
-	printk(KERN_INFO "%s(): %s\n", __func__, onoff ? "on" : "down");
 	if (onoff) {
 #if defined(CONFIG_TARGET_LOCALE_NA)
 		exynos_cpufreq_lock(DVFS_LOCK_ID_CAM, 1);
@@ -1558,7 +1554,6 @@ static struct s3c_platform_camera writeback = {
 void cam_cfg_gpio(struct platform_device *pdev)
 {
 	int ret = 0;
-	printk(KERN_INFO "\n\n\n%s: pdev->id=%d\n", __func__, pdev->id);
 
 	if (pdev->id != 0)
 		return;
@@ -1664,21 +1659,13 @@ void mmc_force_presence_change(struct platform_device *pdev)
 #if defined(CONFIG_MACH_U1_NA_SPR) || defined(CONFIG_MACH_U1_NA_USCC)
 #ifdef CONFIG_S3C_DEV_HSMMC2
 	if (pdev == &s3c_device_hsmmc2) {
-		printk(KERN_INFO "Test logs pdev : %p s3c_device_hsmmc2 %p\n",
-				pdev, &s3c_device_hsmmc2);
 		notify_func = hsmmc2_notify_func;
-		printk(KERN_INFO "Test logs notify_func = hsmmc2_notify_func : %p\n",
-				notify_func);
 	}
 #endif
 #endif
 #ifdef CONFIG_S3C_DEV_HSMMC3
 	if (pdev == &s3c_device_hsmmc3) {
-		printk(KERN_INFO "Test logs pdev : %p s3c_device_hsmmc3 %p\n",
-				pdev, &s3c_device_hsmmc3);
 		notify_func = hsmmc3_notify_func;
-		printk(KERN_INFO"Test logs notify_func = hsmmc3_notify_func: %p\n",
-				notify_func);
 	}
 #endif
 
@@ -2550,8 +2537,6 @@ static void __init ld9040_fb_init(void)
 
 	pdata = ld9040_platform_data.pdata;
 	pdata->ops = &ops;
-
-	printk(KERN_INFO "%s :: lcdtype=%d\n", __func__, lcdtype);
 
 	spi_register_board_info(spi_board_info, ARRAY_SIZE(spi_board_info));
 
@@ -5922,8 +5907,6 @@ static void mxt540e_power_on_oled(void)
 	s3c_gpio_cfgpin(GPIO_OLED_DET, S3C_GPIO_SFN(0xf));
 
 	gpio_free(GPIO_OLED_DET);
-
-	printk(KERN_INFO "[TSP] %s\n", __func__);
 }
 
 static void mxt540e_power_off_oled(void)
@@ -5937,8 +5920,6 @@ static void mxt540e_power_off_oled(void)
 	mxt540e_power_off();
 
 	gpio_free(GPIO_OLED_DET);
-
-	printk(KERN_INFO "[TSP] %s\n", __func__);
 }
 
 /*
@@ -7011,8 +6992,6 @@ static int lcd_power_on(void *ld, int enable)
 	struct regulator *regulator;
 	int err;
 
-	printk(KERN_INFO "%s : enable=%d\n", __func__, enable);
-
 	if (ld == NULL) {
 		printk(KERN_ERR "lcd device object is NULL.\n");
 		return -EPERM;
@@ -7091,9 +7070,6 @@ static void __init mipi_fb_init(void)
 	/*
 	 * register lcd panel data.
 	 */
-	printk(KERN_INFO "%s :: fb_platform_data.hw_ver = 0x%x\n",
-	       __func__, fb_platform_data.hw_ver);
-
 	dsim_pd = (struct s5p_platform_dsim *)
 	    s5p_device_dsim.dev.platform_data;
 
@@ -7118,10 +7094,6 @@ static void __init mipi_fb_init(void)
 	platform_device_register(&s5p_device_dsim);
 
 	s3cfb_set_platdata(&fb_platform_data);
-
-	printk(KERN_INFO
-	       "platform data of %s lcd panel has been registered.\n",
-	       dsim_pd->lcd_panel_name);
 }
 #endif
 
@@ -7815,7 +7787,6 @@ static void __init universal_tsp_init(void)
 	s3c_gpio_setpull(gpio, S3C_GPIO_PULL_UP);
 	i2c_devs3[0].irq = gpio_to_irq(gpio);
 
-	printk(KERN_INFO "%s touch : %d\n", __func__, i2c_devs3[0].irq);
 #ifdef CONFIG_MACH_Q1_BD
 	gpio_request(GPIO_TSP_SDA, "TSP_SDA");
 	gpio_request(GPIO_TSP_SCL, "TSP_SCL");
@@ -7866,7 +7837,6 @@ static int p6_wacom_init_hw(void)
 static int __init p6_wacom_init(void)
 {
 	p6_wacom_init_hw();
-	printk(KERN_INFO "[E-PEN] : wacom IC initialized.\n");
 	return 0;
 }
 #endif
@@ -7922,8 +7892,6 @@ static void __init smdkc210_machine_init(void)
 	i2c_register_board_info(7, i2c_devs7, ARRAY_SIZE(i2c_devs7));
 #endif
 #ifdef CONFIG_SAMSUNG_MHL
-	printk(KERN_INFO "%s() register sii9234 driver\n", __func__);
-
 	i2c_register_board_info(15, tuna_i2c15_boardinfo,
 			ARRAY_SIZE(tuna_i2c15_boardinfo));
 #endif

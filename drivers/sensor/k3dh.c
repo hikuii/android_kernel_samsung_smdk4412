@@ -319,14 +319,12 @@ static int k3dh_accel_disable(struct k3dh_data *data)
 /*  open command for K3DH device file  */
 static int k3dh_open(struct inode *inode, struct file *file)
 {
-	k3dh_infomsg("is called.\n");
 	return 0;
 }
 
 /*  release command for K3DH device file */
 static int k3dh_close(struct inode *inode, struct file *file)
 {
-	k3dh_infomsg("is called.\n");
 	return 0;
 }
 
@@ -364,9 +362,6 @@ static int k3dh_set_delay(struct k3dh_data *data, s64 delay_ns)
 	odr_value = odr_delay_table[i].odr;
 	delay_ns = odr_delay_table[i].delay_ns;
 
-	k3dh_infomsg("old=%lldns, new=%lldns, odr=0x%x/0x%x\n",
-		k3dh_get_delay(data), delay_ns, odr_value,
-			data->ctrl_reg1_shadow);
 	mutex_lock(&data->write_lock);
 	if (odr_value != (data->ctrl_reg1_shadow & ODR_MASK)) {
 		u8 ctrl = (data->ctrl_reg1_shadow & ~ODR_MASK);
@@ -394,8 +389,6 @@ static long k3dh_ioctl(struct file *file,
 		if (copy_from_user(&enable, (void __user *)arg,
 					sizeof(enable)))
 			return -EFAULT;
-		k3dh_infomsg("opened = %d, enable = %d\n",
-			atomic_read(&data->opened), enable);
 		if (enable)
 			err = k3dh_accel_enable(data);
 		else
@@ -596,8 +589,6 @@ void k3dh_shutdown(struct i2c_client *client)
 	int res = 0;
 	struct k3dh_data *data = i2c_get_clientdata(client);
 
-	k3dh_infomsg("is called.\n");
-
 	res = i2c_smbus_write_byte_data(data->client,
 					CTRL_REG1, PM_OFF);
 	if (res < 0)
@@ -613,8 +604,6 @@ static int k3dh_probe(struct i2c_client *client,
 #endif
 	struct accel_platform_data *pdata;
 	int err;
-
-	k3dh_infomsg("is started.\n");
 
 	if (!i2c_check_functionality(client->adapter,
 				     I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
@@ -667,8 +656,7 @@ static int k3dh_probe(struct i2c_client *client,
 	if (!pdata) {
 		pr_err("using defualt position\n");
 	} else {
-		pr_info("successful, position = %d\n",
-			pdata->accel_get_position());
+		//
 	}
 
 #if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS)
@@ -751,8 +739,6 @@ static int k3dh_probe(struct i2c_client *client,
 
 	dev_set_drvdata(data->dev, data);
 #endif
-
-	k3dh_infomsg("is successful.\n");
 
 	return 0;
 

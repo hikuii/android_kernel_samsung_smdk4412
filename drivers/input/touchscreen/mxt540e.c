@@ -315,8 +315,6 @@ static int init_write_config(struct mxt540e_data *data, u8 type, const u8 * cfg)
 	ret = write_mem(data, address, size, cfg);
 	instance_num = check_instance(data, type);
 	if (instance_num > 0) {
-		printk(KERN_DEBUG "[TSP] exist instance%d objects (%d)\n",
-			instance_num, type);
 		temp = kmalloc(size * instance_num * sizeof(u8), GFP_KERNEL);
 		memset(temp, 0, size * instance_num);
 		ret |= write_mem(data, address + size,
@@ -381,8 +379,6 @@ static void mxt_reconfigration_normal(struct work_struct *work)
 			if (data->fingers[id].state == MXT540E_STATE_INACTIVE)
 				continue;
 			schedule_delayed_work(&data->config_dwork, HZ * 5);
-			printk(KERN_DEBUG "[TSP] touch pressed!! %s didn't execute!!\n",
-				__func__);
 			enable_irq(data->client->irq);
 			return;
 		}
@@ -400,7 +396,6 @@ static void mxt_reconfigration_normal(struct work_struct *work)
 		if (error < 0)
 			printk(KERN_ERR "[TSP] %s, %d Error!!\n", __func__,
 				__LINE__);
-		printk(KERN_DEBUG "[TSP] %s execute!!\n", __func__);
 		enable_irq(data->client->irq);
 	}
 	config_dwork_flag = 0;
@@ -442,7 +437,6 @@ uint8_t calibrate_chip(struct mxt540e_data *data)
 		&cal_data);
 
 	if (!ret) {
-		printk(KERN_DEBUG "[TSP] calibration success!!!\n");
 		if (check_resume_err == 2) {
 			check_resume_err = 1;
 			schedule_delayed_work(&data->resume_check_dwork,
@@ -726,7 +720,6 @@ static void resume_cal_err_func(struct mxt540e_data *data)
 	int ret;
 	int retry;
 
-	printk(KERN_DEBUG "[TSP] %s\n", __func__);
 	cancel_delayed_work(&data->config_dwork);
 	cancel_delayed_work(&data->resume_check_dwork);
 	cancel_delayed_work(&data->cal_check_dwork);
@@ -743,32 +736,6 @@ static void resume_cal_err_func(struct mxt540e_data *data)
 		input_mt_report_slot_state(data->input_dev,
 				MT_TOOL_FINGER, false);
 
-#if 0
-#if defined(CONFIG_SHAPE_TOUCH)
-		if (get_sec_debug_level() != 0)
-			printk(KERN_DEBUG
-				"[TSP] id[%d],x=%d,y=%d,z=%d,w=%d,com=%d\n", i,
-				data->fingers[i].x, data->fingers[i].y,
-				data->fingers[i].z, data->fingers[i].w,
-				data->fingers[i].component);
-		else
-			printk(KERN_DEBUG "[TSP] id[%d] status:%d\n", i,
-				data->fingers[i].z);
-#else
-		if (get_sec_debug_level() != 0)
-			printk(KERN_DEBUG "[TSP] id[%d],x=%d,y=%d,z=%d,w=%d\n",
-				i, data->fingers[i].x, data->fingers[i].y,
-				data->fingers[i].z, data->fingers[i].w);
-		else
-			printk(KERN_DEBUG "[TSP] id[%d] status:%d\n", i,
-				data->fingers[i].z);
-#endif
-#else
-		if (data->fingers[i].z == 0)
-			printk(KERN_DEBUG "[TSP] released\n");
-		else
-			printk(KERN_DEBUG "[TSP] pressed\n");
-#endif
 		count++;
 	}
 
@@ -1005,9 +972,7 @@ static void median_filter_err_func(struct mxt540e_data *data)
 		}
 		if (error)
 			printk(KERN_ERR "[TSP] fail median filter err setting\n");
-		else
-			printk(KERN_DEBUG "[TSP] success median filter err setting\n");
-
+		//
 	} else {
 		get_object_info(data, PROCG_NOISESUPPRESSION_T48,
 			&size, &obj_address);
@@ -1018,8 +983,7 @@ static void median_filter_err_func(struct mxt540e_data *data)
 		error |= write_mem(data, obj_address + 2, 1, &value);
 		if (error)
 			printk(KERN_ERR "[TSP] failed to reenable CHRGON\n");
-		else
-			printk(KERN_DEBUG "[TSP] success reenable CHRGON\n");
+		//
 	}
 
 }
@@ -1108,18 +1072,7 @@ static void report_input_data(struct mxt540e_data *data)
 
 		if (data->fingers[i].state == MXT540E_STATE_PRESS
 			|| data->fingers[i].state == MXT540E_STATE_RELEASE) {
-#if 0
-			printk(KERN_DEBUG
-				"[TSP] id[%d],x=%d,y=%d,z=%d,w=%d,com=%d\n", i,
-				data->fingers[i].x, data->fingers[i].y,
-				data->fingers[i].z, data->fingers[i].w,
-				data->fingers[i].component);
-#else
-			if (data->fingers[i].z == 0)
-				printk(KERN_DEBUG "[TSP][%d] released\n", i);
-			else
-				printk(KERN_DEBUG "[TSP][%d] pressed\n", i);
-#endif
+			//
 		}
 
 		if (check_resume_err != 0) {
@@ -1186,7 +1139,7 @@ static irqreturn_t mxt540e_irq_thread(int irq, void *ptr)
 
 		if (object_type == GEN_COMMANDPROCESSOR_T6) {
 			if (msg[1] == 0x00) {	/* normal mode */
-				printk(KERN_DEBUG "[TSP] normal mode\n");
+				//
 			}
 			if ((msg[1] & 0x04) == 0x04) {	/* I2C checksum error */
 				printk(KERN_DEBUG "[TSP] I2C checksum error\n");
@@ -1195,7 +1148,7 @@ static irqreturn_t mxt540e_irq_thread(int irq, void *ptr)
 				printk(KERN_DEBUG "[TSP] config error\n");
 			}
 			if ((msg[1] & 0x10) == 0x10) {	/* calibration */
-				printk(KERN_DEBUG "[TSP] calibration is on going\n");
+				//
 				calibration_check_func(data);
 			}
 			if ((msg[1] & 0x20) == 0x20) {	/* signal error */
@@ -1205,16 +1158,14 @@ static irqreturn_t mxt540e_irq_thread(int irq, void *ptr)
 				printk(KERN_DEBUG "[TSP] overflow detected\n");
 			}
 			if ((msg[1] & 0x80) == 0x80) {	/* reset */
-				printk(KERN_DEBUG "[TSP] reset is ongoing\n");
+				//
 			}
 		}
 
 		if (object_type == PROCI_TOUCHSUPPRESSION_T42) {
 			if ((msg[1] & 0x01) == 0x00) {	/* Palm release */
-				printk(KERN_DEBUG "[TSP] palm touch released\n");
 				touch_is_pressed = 0;
 			} else if ((msg[1] & 0x01) == 0x01) {	/* Palm Press */
-				printk(KERN_DEBUG "[TSP] palm touch detected\n");
 				touch_is_pressed = 1;
 				touch_message_flag = 1;
 			}
@@ -1358,7 +1309,6 @@ static void mxt540e_fb_suspend(struct mxt540e_data *data)
 		return;
 
 	if (mxt540e_enabled) {
-		printk(KERN_DEBUG "[TSP] %s\n", __func__);
 		mxt540e_enabled = 0;
 		touch_is_pressed = 0;
 
@@ -1367,7 +1317,7 @@ static void mxt540e_fb_suspend(struct mxt540e_data *data)
 
  	 	data->fb_suspended = true;
 	} else {
-		printk(KERN_DEBUG "[TSP] %s, but already off\n", __func__);
+		//
 	}
 }
 
@@ -1382,7 +1332,6 @@ static void mxt540e_fb_resume(struct mxt540e_data *data)
 	int retry = 3;
 
 	if (mxt540e_enabled == 0) {
-		printk(KERN_DEBUG "[TSP] %s\n", __func__);
 		mxt540e_internal_resume(data);
 
 		mxt540e_enabled = 1;
@@ -1420,7 +1369,7 @@ static void mxt540e_fb_resume(struct mxt540e_data *data)
 
  	 	data->fb_suspended = false;
 	} else {
-		printk(KERN_DEBUG "[TSP] %s, but already on\n", __func__);
+		//
 	}
 }
 
@@ -1907,8 +1856,6 @@ static int mxt540e_load_fw(struct device *dev, const char *fn)
 	int check_frame_crc_error = 0;
 	int check_wating_frame_data_error = 0;
 
-	printk(KERN_DEBUG "[TSP] mxt540e_load_fw start!!!\n");
-
 	ret = request_firmware(&fw, fn, &client->dev);
 	if (ret) {
 		dev_err(dev, "Unable to open firmware %s\n", fn);
@@ -1991,8 +1938,6 @@ static int mxt540e_load_fw(struct device *dev, const char *fn)
 		pos += frame_size;
 
 		dev_dbg(dev, "Updated %d bytes / %zd bytes\n", pos, fw->size);
-		printk(KERN_DEBUG "[TSP] Updated %d bytes / %zd bytes\n",
-			pos, fw->size);
 
 		msleep(20);
 	}
@@ -2018,8 +1963,6 @@ static int mxt540e_load_fw_bootmode(struct device *dev, const char *fn)
 	int ret;
 	int check_frame_crc_error = 0;
 	int check_wating_frame_data_error = 0;
-
-	printk(KERN_DEBUG "[TSP] mxt540e_load_fw start!!!\n");
 
 	ret = request_firmware(&fw, fn, &client->dev);
 	if (ret) {
@@ -2078,8 +2021,6 @@ static int mxt540e_load_fw_bootmode(struct device *dev, const char *fn)
 		pos += frame_size;
 
 		dev_dbg(dev, "Updated %d bytes / %zd bytes\n", pos, fw->size);
-		printk(KERN_DEBUG "[TSP] Updated %d bytes / %zd bytes\n",
-			pos, fw->size);
 
 		msleep(20);
 	}
@@ -2342,7 +2283,6 @@ static ssize_t set_mxt_firm_update_store(struct device *dev,
 {
 	struct mxt540e_data *data = dev_get_drvdata(dev);
 	int error = 0;
-	printk(KERN_DEBUG "[TSP] set_mxt_update_show start!!\n");
 	if (*buf != 'S' && *buf != 'F') {
 		printk(KERN_ERR "Invalid values\n");
 		dev_err(dev, "Invalid values\n");
@@ -2358,7 +2298,6 @@ static ssize_t set_mxt_firm_update_store(struct device *dev,
 		enable_irq(data->client->irq);
 		return size;
 	}
-	printk(KERN_DEBUG "[TSP] mxt540E_fm_update\n");
 	error = mxt540e_load_fw(dev, MXT540E_FW_NAME);
 
 	if (error) {
@@ -2369,7 +2308,6 @@ static ssize_t set_mxt_firm_update_store(struct device *dev,
 	} else {
 		dev_dbg(dev, "The firmware update succeeded\n");
 		firm_status_data = 2;
-		printk(KERN_DEBUG "[TSP] The firmware update succeeded\n");
 
 		/* Wait for reset */
 		msleep(MXT540E_SW_RESET_TIME);
@@ -2610,7 +2548,6 @@ static int __devinit mxt540e_probe(struct i2c_client *client,
 
 	ret = mxt540e_check_bootloader(client, MXT540E_WAITING_BOOTLOAD_CMD);
 	if (ret >= 0) {
-		printk(KERN_DEBUG "[TSP] boot mode. firm update excute\n");
 		mxt540e_load_fw_bootmode(NULL, MXT540E_FW_NAME);
 		msleep(MXT540E_SW_RESET_TIME);
 	} else {
@@ -2673,7 +2610,6 @@ static int __devinit mxt540e_probe(struct i2c_client *client,
 		data->actvsyncsperx_batt = pdata->actvsyncsperx_batt;
 		data->actvsyncsperx_charging = pdata->actvsyncsperx_charging;
 
-		printk(KERN_DEBUG "[TSP] TSP chip is MXT540E\n");
 		if ((data->tsp_version < firmware_latest)
 			|| (data->tsp_build != build_latest)) {
 			printk(KERN_DEBUG "[TSP] mxt540E force firmware update\n");

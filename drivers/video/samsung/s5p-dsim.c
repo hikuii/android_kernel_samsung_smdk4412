@@ -167,7 +167,6 @@ static void dsim_check_hs_toggle_work_q_handler(struct work_struct *work)
 		container_of(work, struct dsim_global, check_hs_toggle_work.work);
 
 	if (dsim->dsim_info->hs_toggle) {
-		dev_info(dsim->dev, "check_hs_toggle\n");
 		schedule_delayed_work(&dsim->check_hs_toggle_work, msecs_to_jiffies(60000));
 	}
 }
@@ -1003,8 +1002,6 @@ static int s5p_dsim_init_link(struct dsim_global *dsim)
 
 		return DSIM_TRUE;
 	default:
-		dev_info(dsim->dev, "DSI Master is already init\n");
-
 		return DSIM_FALSE;
 	}
 }
@@ -1187,8 +1184,6 @@ void s5p_dsim_fb_suspend(void)
 	pm_message_t state;
 	struct dsim_global *dsim = g_dsim;
 
-	dev_info(dsim->dev, "+%s\n", __func__);
-
 	if (dsim->mipi_ddi_pd->resume_complete == 0)
 		return;
 
@@ -1229,16 +1224,12 @@ void s5p_dsim_fb_suspend(void)
 	if (dsim->pd->mipi_power)
 		dsim->pd->mipi_power(0);
 
-	dev_info(dsim->dev, "-%s\n", __func__);
-
 	return;
 }
 
 void s5p_dsim_fb_resume(void)
 {
 	struct dsim_global *dsim = g_dsim;
-
-	dev_info(dsim->dev, "+%s\n", __func__);
 
 	/* MIPI SIGNAL ON */
 	if (dsim->pd->mipi_power)
@@ -1278,8 +1269,6 @@ void s5p_dsim_fb_resume(void)
 
 	dsim->mipi_ddi_pd->resume_complete = 1;
 
-	dev_info(dsim->dev, "-%s\n", __func__);
-
 	return;
 }
 
@@ -1288,8 +1277,6 @@ void s5p_dsim_fb_resume(void)
 static int s5p_dsim_suspend(struct platform_device *pdev, pm_message_t state)
 {
 	struct dsim_global *dsim = platform_get_drvdata(pdev);
-
-	dev_info(&pdev->dev, "%s\n", __func__);
 
 	dsim->mipi_ddi_pd->resume_complete = 0;
 
@@ -1313,8 +1300,6 @@ static int s5p_dsim_resume(struct platform_device *pdev)
 	u32 int_stat;
 
 	struct dsim_global *dsim = platform_get_drvdata(pdev);
-
-	dev_info(&pdev->dev, "%s\n", __func__);
 
 	if (dsim->pd->mipi_power)
 		dsim->pd->mipi_power(1);
@@ -1391,8 +1376,6 @@ static int hs_toggle_store(struct device *dev,
 	if (rc < 0)
 		return rc;
 	else {
-		dev_info(dev, "%s - %d, %d\n", __func__, jiffies_to_msecs(dsim->dsim_info->hs_toggle), value);
-
 		if (value == 1)
 			dsim->dsim_info->hs_toggle = msecs_to_jiffies(3000);
 		else
@@ -1588,8 +1571,6 @@ static int s5p_dsim_probe(struct platform_device *pdev)
 
 	if (dsim->dsim_info->hs_toggle)
 		s5p_dsim_frame_done_interrupt_enable(dsim, 1);
-
-	dev_info(&pdev->dev, "mipi-dsi driver has been probed\n");
 
 #if 0
 #ifdef CONFIG_HAS_WAKELOCK

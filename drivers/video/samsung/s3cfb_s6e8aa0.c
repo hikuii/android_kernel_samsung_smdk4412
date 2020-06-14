@@ -201,8 +201,6 @@ static void oled_detection_work(struct work_struct *work)
 
 	int oled_det_level = gpio_get_value(GPIO_OLED_DET);
 
-	dev_info(&lcd->ld->dev, "%s, %d, %d\n", __func__, lcd->oled_detection_count, oled_det_level);
-
 	if (!oled_det_level) {
 		if (lcd->oled_detection_count < 10) {
 			schedule_delayed_work(&lcd->oled_detection, HZ/8);
@@ -218,8 +216,6 @@ static void oled_detection_work(struct work_struct *work)
 static irqreturn_t oled_detection_int(int irq, void *_lcd)
 {
 	struct lcd_info *lcd = _lcd;
-
-	dev_info(&lcd->ld->dev, "%s\n", __func__);
 
 	lcd->oled_detection_count = 0;
 	schedule_delayed_work(&lcd->oled_detection, HZ/16);
@@ -911,8 +907,6 @@ static int update_brightness(struct lcd_info *lcd, u8 force)
 		s6e8ax0_set_elvss(lcd, force);
 
 		lcd->current_bl = lcd->bl;
-
-		dev_info(&lcd->ld->dev, "brightness=%d, bl=%d, candela=%d\n", brightness, lcd->bl, candela_table[lcd->bl]);
 	}
 
 	mutex_unlock(&lcd->bl_lock);
@@ -1007,8 +1001,6 @@ static int s6e8ax0_power_on(struct lcd_info *lcd)
 	struct lcd_platform_data *pd = NULL;
 	pd = lcd->lcd_pd;
 
-	dev_info(&lcd->ld->dev, "%s\n", __func__);
-
 	ret = s6e8ax0_ldi_init(lcd);
 	if (ret) {
 		dev_err(&lcd->ld->dev, "failed to initialize ldi.\n");
@@ -1033,8 +1025,6 @@ err:
 static int s6e8ax0_power_off(struct lcd_info *lcd)
 {
 	int ret = 0;
-
-	dev_info(&lcd->ld->dev, "%s\n", __func__);
 
 	lcd->ldi_enable = 0;
 
@@ -1083,8 +1073,6 @@ static int s6e8ax0_get_power(struct lcd_device *ld)
 static int s6e8ax0_check_fb(struct lcd_device *ld, struct fb_info *fb)
 {
 	struct lcd_info *lcd = lcd_get_data(ld);
-
-	dev_info(&lcd->ld->dev, "%s, fb%d\n", __func__, fb->node);
 
 	return 0;
 }
@@ -1157,7 +1145,6 @@ static ssize_t power_reduce_store(struct device *dev,
 		return rc;
 	else {
 		if (lcd->acl_enable != value) {
-			dev_info(dev, "%s - %d, %d\n", __func__, lcd->acl_enable, value);
 			mutex_lock(&lcd->bl_lock);
 			lcd->acl_enable = value;
 			mutex_unlock(&lcd->bl_lock);
@@ -1194,7 +1181,6 @@ static ssize_t siop_enable_store(struct device *dev,
 		return rc;
 	else {
 		if (lcd->siop_enable != value) {
-			dev_info(dev, "%s - %d, %d\n", __func__, lcd->siop_enable, value);
 			mutex_lock(&lcd->bl_lock);
 			lcd->siop_enable = value;
 			mutex_unlock(&lcd->bl_lock);
@@ -1268,7 +1254,6 @@ static ssize_t auto_brightness_store(struct device *dev,
 		return rc;
 	else {
 		if (lcd->auto_brightness != value) {
-			dev_info(dev, "%s - %d, %d\n", __func__, lcd->auto_brightness, value);
 			mutex_lock(&lcd->bl_lock);
 			lcd->auto_brightness = value;
 			mutex_unlock(&lcd->bl_lock);
@@ -1294,7 +1279,6 @@ void s6e8ax0_fb_suspend(void)
 
 	set_dsim_lcd_enabled(0);
 
-	dev_info(&lcd->ld->dev, "+%s\n", __func__);
 #if defined(GPIO_OLED_DET)
 	disable_irq(lcd->irq);
 	err = gpio_request(GPIO_OLED_DET, "OLED_DET");
@@ -1306,7 +1290,6 @@ void s6e8ax0_fb_suspend(void)
 	gpio_free(GPIO_OLED_DET);
 #endif
 	s6e8ax0_power(lcd, FB_BLANK_POWERDOWN);
-	dev_info(&lcd->ld->dev, "-%s\n", __func__);
 
 	lcd->fb_suspended = true;
 
@@ -1320,15 +1303,12 @@ void s6e8ax0_fb_resume(void)
 	if (!lcd->fb_suspended)
 		return;
 
-	dev_info(&lcd->ld->dev, "+%s\n", __func__);
 	s6e8ax0_power(lcd, FB_BLANK_UNBLANK);
 #if defined(GPIO_OLED_DET)
 	s3c_gpio_cfgpin(GPIO_OLED_DET, S3C_GPIO_SFN(0xf));
 	s3c_gpio_setpull(GPIO_OLED_DET, S3C_GPIO_PULL_NONE);
 	enable_irq(lcd->irq);
 #endif
-	dev_info(&lcd->ld->dev, "-%s\n", __func__);
-
 	set_dsim_lcd_enabled(1);
 
 	lcd->fb_suspended = false;
@@ -1496,10 +1476,6 @@ static int s6e8ax0_probe(struct device *dev)
 
 	s6e8ax0_read_id(lcd, lcd->id);
 
-	dev_info(&lcd->ld->dev, "ID: %x, %x, %x\n", lcd->id[0], lcd->id[1], lcd->id[2]);
-
-	dev_info(&lcd->ld->dev, "s6e8aa0 lcd panel driver has been probed.\n");
-
 #ifdef SMART_DIMMING
 	s6e8aa0_check_id(lcd, lcd->id);
 
@@ -1587,8 +1563,6 @@ static int __devexit s6e8ax0_remove(struct device *dev)
 static void s6e8ax0_shutdown(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
-
-	dev_info(&lcd->ld->dev, "%s\n", __func__);
 
 	s6e8ax0_power(lcd, FB_BLANK_POWERDOWN);
 }

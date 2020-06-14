@@ -130,7 +130,6 @@ static void vibrator_work(struct work_struct *_work)
 			regulator_enable(data->regulator);
 		i2c_max8997_hapticmotor(data, true);
 		pwm_config(data->pwm, pwm_duty, data->pdata->period);
-		pr_info("[VIB] %s: pwm_config duty=%d\n", __func__, pwm_duty);
 		pwm_enable(data->pwm);
 
 		data->running = true;
@@ -245,8 +244,6 @@ ssize_t pwm_value_store(struct device *dev,
 	if (kstrtoul(buf, 0, &pwm_val))
 		pr_err("[VIB] %s: error on storing pwm_value\n", __func__);
 
-	pr_info("[VIB] %s: pwm_value=%lu\n", __func__, pwm_val);
-
 	pwm_duty = (pwm_val * pwm_duty_min) / 100 + pwm_duty_min;
 
 	/* make sure new pwm duty is in range */
@@ -256,8 +253,6 @@ ssize_t pwm_value_store(struct device *dev,
 	else if (pwm_duty < pwm_duty_min) {
 		pwm_duty = pwm_duty_min;
 	}
-
-	pr_info("[VIB] %s: pwm_duty=%d\n", __func__, pwm_duty);
 
 	return size;
 }

@@ -1026,7 +1026,7 @@ static int fb_notifier_callback(struct notifier_block *self,
 					break;
 				default:
 				case FB_BLANK_POWERDOWN:
-#ifndef CONFIG_CPU_EXYNOS4210
+#ifndef CONFIG_MACH_U1_BD
 					mdnie_fb_suspend(mdnie);
 #endif
 					break;

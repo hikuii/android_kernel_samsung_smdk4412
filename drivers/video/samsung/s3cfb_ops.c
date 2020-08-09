@@ -916,7 +916,7 @@ int s3cfb_setcolreg(unsigned int regno, unsigned int red,
 
 int s3cfb_blank(int blank_mode, struct fb_info *fb)
 {
-#if defined(CONFIG_CPU_EXYNOS4210)
+#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_CPU_EXYNOS4412)
 	return 0;
 #endif
 	struct s3cfb_window *win = fb->par;
@@ -1095,6 +1095,7 @@ int s3cfb_blank(int blank_mode, struct fb_info *fb)
 	return 0;
 }
 
+extern unsigned int poweroff_charging;
 int s3cfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fb)
 {
 	struct s3cfb_window *win = fb->par;

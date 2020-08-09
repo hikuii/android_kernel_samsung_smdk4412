@@ -233,10 +233,15 @@ static void mdnie_update(struct mdnie_info *mdnie)
 {
 	struct mdnie_tuning_info *table = NULL;
 
-	if (!mdnie->enable) {
+	bool disabled = !mdnie->enable || mdnie->fb_suspended;
+	if (!mdnie->enable)
 		dev_err(mdnie->dev, "mdnie state is off\n");
+
+	if (mdnie->fb_suspended)
+		dev_err(mdnie->dev, "mdnie state is suspended\n");
+
+	if (disabled)
 		return;
-	}
 
 	table = mdnie_request_table(mdnie);
 	if (!IS_ERR_OR_NULL(table) && !IS_ERR_OR_NULL(table->sequence)) {
@@ -1021,7 +1026,9 @@ static int fb_notifier_callback(struct notifier_block *self,
 					break;
 				default:
 				case FB_BLANK_POWERDOWN:
+#ifndef CONFIG_CPU_EXYNOS4210
 					mdnie_fb_suspend(mdnie);
+#endif
 					break;
 			}
 		}

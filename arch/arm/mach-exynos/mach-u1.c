@@ -7480,8 +7480,8 @@ struct s5p_platform_tmu u1_tmu_data __initdata = {
 		.start_tripping     = 110,
 		.start_emergency    = 120,
 #else
-		.stop_1st_throttle  = 78,
-		.start_1st_throttle = 80,
+		.stop_1st_throttle  = 59,
+		.start_1st_throttle = 64,
 		.stop_2nd_throttle  = 87,
 		.start_2nd_throttle = 103,
 		.start_tripping     = 110,

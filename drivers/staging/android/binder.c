@@ -4068,10 +4068,7 @@ static int binder_thread_write(struct binder_proc *proc,
 			}
 			binder_inner_proc_unlock(proc);
 		} break;
-		case 0:
-			pr_err("%d:%d Ignored 0-command %d\n",
-			       proc->pid, thread->pid, cmd);
-			break;
+
 		default:
 			pr_err("%d:%d unknown command %d\n",
 			       proc->pid, thread->pid, cmd);

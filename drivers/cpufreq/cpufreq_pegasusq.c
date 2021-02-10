@@ -182,7 +182,7 @@ static int hotplug_freq[4][2] = {
 	{200000, 500000},
 	{200000, 0}
 };
-#elif CONFIG_MACH_SMDK4210
+#elif CONFIG_MACH_U1
 static int hotplug_rq[2][2] = {
 	{0, 100}, {100, 0}
 };
